@@ -1,118 +1,141 @@
 import UIKit
 
-extension UIView {
-    func addSubviews(_ subviews: [UIView]) {
-        subviews.forEach { addSubview($0) }
-    }
-}
-
 final class TrackersViewController: UIViewController {
     
-    private let labelTrackers: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 34, weight: .bold)
-        label.textColor = UIColor.black
-        label.text = "Трекеры"
-        return label
-    }()
-    
-    private let emptyLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        label.text = "Что будем отслеживать?"
-        return label
-    }()
-    
+    private var categories: [TrackerCategory] = []
+    private var completedTrackers: [TrackerRecord] = []
+    private var selectedDate: Date = Date()
+
     private let searchBar: UISearchBar = {
-        let searchBar = UISearchBar()
-        searchBar.placeholder = "Поиск"
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
-        searchBar.heightAnchor.constraint(equalToConstant: 36).isActive = true
-        searchBar.backgroundImage = UIImage()
-        searchBar.backgroundColor = .clear
-        return searchBar
+        let search = UISearchBar()
+        search.translatesAutoresizingMaskIntoConstraints = false
+        search.placeholder = "Поиск"
+        search.searchTextField.font = .systemFont(ofSize: 17, weight: .regular)
+        search.searchBarStyle = .minimal
+        return search
     }()
     
-    private let buttonAddTracker: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(systemName: "plus"), for: .normal)
-        button.tintColor = .black
-        button.addTarget(nil, action: #selector(didTabAdd), for: .touchUpInside)
-        return button
+    private let emptyStateImage = UIImageView(image: UIImage(named: "moko_star"))
+    
+    private let emptyStateLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Что будем отслеживать?"
+        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .black
+        return label
     }()
     
-    private let imagePlaceholder: UIImageView = {
-        let image = UIImageView(image: UIImage(named: "mock_star"))
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFill
-        return image
-    } ()
+    private let shortData: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "dd.MM.yy"
+        return df
+    }()
     
-    private let dataButton: UIButton = {
-        let button = UIButton(type: .custom)
-        let currentDate = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yy"
-        let formattedDate = formatter.string(from: currentDate)
-        
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle(formattedDate, for: .normal)
-        button.setTitleColor(.black, for: .normal)
-        button.layer.cornerRadius = 8
-        button.contentEdgeInsets = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
-        button.backgroundColor = .ypBackgroundDay
-        return button
+    private let labelMain: UILabel = {
+        let label = UILabel()
+        label.text = "Трекеры"
+        label.font = .systemFont(ofSize: 34, weight: .bold)
+        label.textColor = .black
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
-        setupSubview()
-        
-        let tapGesture = UITapGestureRecognizer(
-            target: self,
-            action: #selector(dismissKeyboard)
-        )
-        tapGesture.cancelsTouchesInView = false
-        view.addGestureRecognizer(tapGesture)
+        view.backgroundColor = .systemBackground
+        configureNavigationBar()
+        configureLayout()
     }
     
-    private func setupSubview() {
-        view.addSubviews([buttonAddTracker, dataButton, labelTrackers, searchBar, emptyLabel, imagePlaceholder])
+    
+    private func configureNavigationBar() {
+        
+        let configAddButton = UIImage.SymbolConfiguration(pointSize: 18, weight: .bold)
+        let addButton = UIButton(type: .system)
+        addButton.setImage(UIImage(systemName: "plus", withConfiguration: configAddButton), for: .normal)
+        addButton.tintColor = .black
+        addButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: -6, bottom: 0, right: 12)
+        addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(customView: addButton)
+        
+        let dateButton = UIButton(type: .system)
+        dateButton.setTitle(shortData.string(from: Date()), for: .normal)
+        dateButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .regular)
+        dateButton.backgroundColor = .systemGray6
+        dateButton.layer.cornerRadius = 8
+        dateButton.tintColor = .black
+        dateButton.contentEdgeInsets = UIEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        dateButton.addTarget(self, action: #selector(dateButtonTapped), for: .touchUpInside)
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: dateButton)
+    }
+    
+    
+    private func configureLayout() {
+        
+        emptyStateImage.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubviews([searchBar, labelMain, emptyStateImage, emptyStateLabel])
         
         NSLayoutConstraint.activate([
-            buttonAddTracker.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            buttonAddTracker.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            labelMain.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 1),
+            labelMain.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            labelMain.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            dataButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            dataButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            searchBar.topAnchor.constraint(equalTo: labelMain.bottomAnchor, constant: 7),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            labelTrackers.topAnchor.constraint(equalTo: buttonAddTracker.bottomAnchor, constant: 8),
-            labelTrackers.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            labelTrackers.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            searchBar.topAnchor.constraint(equalTo: labelTrackers.bottomAnchor, constant: 8),
-            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
+            emptyStateImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            emptyStateImage.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -32),
             
-            imagePlaceholder.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            imagePlaceholder.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            
-            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.topAnchor.constraint(equalTo: imagePlaceholder.bottomAnchor, constant: 8)
+            emptyStateLabel.topAnchor.constraint(equalTo: emptyStateImage.bottomAnchor, constant: 8),
+            emptyStateLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     
-    @objc
-    private func didTabAdd() {
-        // TODO
+    
+    @objc private func addButtonTapped() {
+        print("Add tapped")
     }
     
-    @objc
-    func dismissKeyboard() {
-        view.endEditing(true)
+    @objc private func dateButtonTapped() {
+        print("Date tapped")
+    }
+    
+    func addTracker(_ tracker: Tracker, to categoryTitle: String) {
+        if let i = categories.firstIndex(where: { $0.title == categoryTitle }) {
+            var updated = categories[i]
+            updated = TrackerCategory(title: updated.title, trackers: updated.trackers + [tracker])
+            var newCategories = categories
+            newCategories[i] = updated
+            categories = newCategories
+        } else {
+            let newCategory = TrackerCategory(title: categoryTitle, trackers: [tracker])
+            categories = categories + [newCategory]
+        }
+    }
+    
+    func toggleTrackerCompletion(_ tracker: Tracker) {
+        if let i = completedTrackers.firstIndex(where: {
+            $0.trackerID == tracker.id &&
+            Calendar.current.isDate($0.date, inSameDayAs: selectedDate)
+        }) {
+            var updated = completedTrackers
+            updated.remove(at: i)
+            completedTrackers = updated
+        } else {
+            let record = TrackerRecord(trackerID: tracker.id,  date: selectedDate)
+            completedTrackers = completedTrackers + [record]
+        }
+    }
+}
+
+extension UIView {
+    func addSubviews(_ subviews: [UIView]) {
+        subviews.forEach { addSubview($0) }
     }
 }
