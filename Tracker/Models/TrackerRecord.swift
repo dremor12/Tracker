@@ -1,6 +1,6 @@
 import UIKit
 
-struct TrackerRecord {
-    let trackerID: UUID
+struct TrackerRecord: Hashable {
+    let trackerId: UUID
     let date: Date
 }
