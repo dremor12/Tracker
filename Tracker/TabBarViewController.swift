@@ -11,8 +11,8 @@ final class TabBarViewController: UITabBarController {
     private func configureTabs() {
         
         let trackersViewController = TrackersViewController()
-        let trackersNavigtion = UINavigationController(rootViewController: trackersViewController)
-        trackersNavigtion.tabBarItem = UITabBarItem(
+        let trackersNavigation = UINavigationController(rootViewController: trackersViewController)
+        trackersNavigation.tabBarItem = UITabBarItem(
             title: "Трекеры",
             image: UIImage(systemName: "record.circle.fill"),
             selectedImage: nil
@@ -26,7 +26,7 @@ final class TabBarViewController: UITabBarController {
             selectedImage: nil
         )
         
-        viewControllers = [trackersNavigtion, statsNavigation]
+        viewControllers = [trackersNavigation, statsNavigation]
     }
     
     private func addHairline() {

@@ -11,38 +11,38 @@ enum WeekDay: String, CaseIterable, Hashable {
 
     var shortName: String {
         switch self {
-        case .monday: return "Пн"
-        case .tuesday: return "Вт"
-        case .wednesday: return "Ср"
-        case .thursday: return "Чт"
-        case .friday: return "Пт"
-        case .saturday: return "Сб"
-        case .sunday: return "Вс"
+        case .monday: "Пн"
+        case .tuesday: "Вт"
+        case .wednesday: "Ср"
+        case .thursday: "Чт"
+        case .friday: "Пт"
+        case .saturday: "Сб"
+        case .sunday: "Вс"
         }
     }
 
     var order: Int {
         switch self {
-        case .monday: return 1
-        case .tuesday: return 2
-        case .wednesday: return 3
-        case .thursday: return 4
-        case .friday: return 5
-        case .saturday: return 6
-        case .sunday: return 7
+        case .monday:  1
+        case .tuesday:  2
+        case .wednesday:  3
+        case .thursday:  4
+        case .friday:  5
+        case .saturday:  6
+        case .sunday:  7
         }
     }
 
     static func from(calendarWeekday int: Int) -> WeekDay? {
         switch int {
-        case 2: return .monday
-        case 3: return .tuesday
-        case 4: return .wednesday
-        case 5: return .thursday
-        case 6: return .friday
-        case 7: return .saturday
-        case 1: return .sunday
-        default: return nil
+        case 2: .monday
+        case 3: .tuesday
+        case 4: .wednesday
+        case 5: .thursday
+        case 6: .friday
+        case 7: .saturday
+        case 1: .sunday
+        default: nil
         }
     }
 }
