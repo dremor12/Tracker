@@ -1,7 +1,11 @@
 import UIKit
 
 final class TrackersViewController: UIViewController, CreateTrackerDelegate {
-    
+
+    private let trackerStore = TrackerStore()
+    private let trackerCategoryStore = TrackerCategoryStore()
+    private let trackerRecordStore = TrackerRecordStore()
+
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.sectionInset = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
@@ -43,7 +47,7 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
         label.textColor = .black
         return label
     }()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -53,16 +57,25 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
         navigationItem.largeTitleDisplayMode = .always
         definesPresentationContext = true
         
+        trackerStore.delegate = self
+        trackerCategoryStore.delegate = self
+        trackerRecordStore.delegate = self
+        
+        trackerStore.startObserving()
+        trackerCategoryStore.startObserving()
+        trackerRecordStore.startObserving()
+
         configureNavigationBar()
         configureSearchController()
         configureLayout()
+    
+        categories = (try? trackerCategoryStore.fetchAll()) ?? []
+        completedTrackers = Set((try? trackerRecordStore.fetchAll()) ?? [])
         updateVisibleCategoriesAndUI()
     }
     
     func didCreateTracker(_ tracker: Tracker) {
-        addTracker(tracker, to: "Без категории")
-        updateVisibleCategoriesAndUI()
-        scrollListToTopIfNeeded()
+        try? trackerStore.create(tracker, in: "Без категории")
     }
     
     private func configureSearchController() {
@@ -241,7 +254,7 @@ extension TrackersViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as? TrackerCell
         else { return UICollectionViewCell() }
-
+        
         let tracker   = visibleCategories[indexPath.section].trackers[indexPath.item]
         let todayRecord  = TrackerRecord(trackerId: tracker.id, date: selectedDate)
         let isCompleted    = completedTrackers.contains(todayRecord)
@@ -251,19 +264,21 @@ extension TrackersViewController: UICollectionViewDataSource {
         
         cell.onToggle = { [weak self] in
             guard let self else { return }
-            let record = TrackerRecord(trackerId: tracker.id, date: self.selectedDate)
-            if Calendar.current.compare(
-                self.selectedDate,
-                to: Date(),
-                toGranularity: .day
-            ) == .orderedDescending { return }
-
+            guard
+                Calendar.current.compare(
+                    self.selectedDate, to: Date(),
+                    toGranularity: .day
+                ) != .orderedDescending
+            else { return }
+            
+            let day = Calendar.current.startOfDay(for: self.selectedDate)
+            let record = TrackerRecord(trackerId: tracker.id, date: day)
+    
             if self.completedTrackers.contains(record) {
-                self.completedTrackers.remove(record)
+                try? self.trackerRecordStore.delete(record)
             } else {
-                self.completedTrackers.insert(record)
+                try? self.trackerRecordStore.add(record)
             }
-            self.updateVisibleCategoriesAndUI()
         }
         return cell
     }
@@ -308,5 +323,29 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
         referenceSizeForHeaderInSection section: Int
     ) -> CGSize {
         CGSize(width: collectionView.bounds.width, height: 32)
+    }
+}
+
+extension TrackersViewController: TrackerStoreDelegate {
+    func trackerStoreDidChange(_ store: TrackerStore) {
+        categories = (try? trackerCategoryStore.fetchAll()) ?? []
+        completedTrackers = Set((try? trackerRecordStore.fetchAll()) ?? [])
+        updateVisibleCategoriesAndUI()
+    }
+}
+
+
+extension TrackersViewController: TrackerCategoryStoreDelegate {
+    func trackerCategoryStoreDidChange(_ store: TrackerCategoryStore) {
+        categories = (try? store.fetchAll()) ?? []
+        updateVisibleCategoriesAndUI()
+    }
+}
+
+
+extension TrackersViewController: TrackerRecordStoreDelegate {
+    func trackerRecordStoreDidChange(_ store: TrackerRecordStore) {
+        completedTrackers = Set((try? store.fetchAll()) ?? [])
+        updateVisibleCategoriesAndUI()
     }
 }
