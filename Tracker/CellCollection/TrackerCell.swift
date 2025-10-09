@@ -62,6 +62,14 @@ final class TrackerCell: UICollectionViewCell {
         toggleButton.addTarget(self, action: #selector(toggleTapped), for: .touchUpInside)
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        contentView.layoutIfNeeded()
+        emojiBackgroundView.layer.masksToBounds = true
+        let radius = min(emojiBackgroundView.bounds.width, emojiBackgroundView.bounds.height) / 2
+        emojiBackgroundView.layer.cornerRadius = radius
+    }
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -102,8 +110,8 @@ final class TrackerCell: UICollectionViewCell {
             
             emojiBackgroundView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
             emojiBackgroundView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            emojiBackgroundView.widthAnchor.constraint(equalToConstant: 24),
-            emojiBackgroundView.heightAnchor.constraint(equalToConstant: 24),
+            emojiBackgroundView.widthAnchor.constraint(equalToConstant: 28),
+            emojiBackgroundView.heightAnchor.constraint(equalToConstant: 28),
             
             emojiLabel.centerXAnchor.constraint(equalTo: emojiBackgroundView.centerXAnchor),
             emojiLabel.centerYAnchor.constraint(equalTo: emojiBackgroundView.centerYAnchor),

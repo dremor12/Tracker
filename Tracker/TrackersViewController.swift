@@ -256,8 +256,9 @@ extension TrackersViewController: UICollectionViewDataSource {
         else { return UICollectionViewCell() }
         
         let tracker   = visibleCategories[indexPath.section].trackers[indexPath.item]
-        let todayRecord  = TrackerRecord(trackerId: tracker.id, date: selectedDate)
-        let isCompleted    = completedTrackers.contains(todayRecord)
+        let startOfSelectedDay = Calendar.current.startOfDay(for: selectedDate)
+        let todayRecord = TrackerRecord(trackerId: tracker.id, date: startOfSelectedDay)
+        let isCompleted = completedTrackers.contains(todayRecord)
         let completedCount = completedTrackers.filter { $0.trackerId == tracker.id }.count
         
         cell.configure(with: tracker, isCompleted: isCompleted, count: completedCount)

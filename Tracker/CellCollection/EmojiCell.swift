@@ -21,8 +21,7 @@ final class EmojiCell: UICollectionViewCell {
         ])
 
         let bg = UIView()
-        bg.backgroundColor = .systemGray5
-        bg.layer.cornerRadius = 8
+        bg.backgroundColor = .ypLightGray
         bg.clipsToBounds = true
         self.selectedBackgroundView = bg
     }
@@ -33,19 +32,15 @@ final class EmojiCell: UICollectionViewCell {
         super.layoutSubviews()
 
         guard let bg = selectedBackgroundView else { return }
+        
         let emojiSize = emojiLabel.intrinsicContentSize
-        let w = emojiSize.width  + 14
-        let h = emojiSize.height + 14
+        let side = max(emojiSize.width, emojiSize.height) + 14
+        
         let cx = contentView.bounds.midX
         let cy = contentView.bounds.midY
-
-        bg.frame = CGRect(
-            x: cx - w/2,
-            y: cy - h/2,
-            width: w,
-            height: h
-        )
-        bg.layer.cornerRadius = h/2
+        bg.frame = CGRect(x: cx - side/2, y: cy - side/2, width: side, height: side)
+        bg.layer.cornerRadius = 16
+        bg.layer.cornerCurve = .continuous
     }
 
     func configure(with emoji: String, selected: Bool) {

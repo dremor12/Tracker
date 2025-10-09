@@ -93,8 +93,7 @@ extension ColorCollectionView: UICollectionViewDataSource {
             for: indexPath
         ) as! ColorCell
         let color = colors[indexPath.item]
-        cell.configure(color: color)
-        cell.applySelectedAppearance(indexPath.item == selectedIndex)
+        cell.configure(color: color, selected: indexPath.item == selectedIndex)
         return cell
     }
     
@@ -105,7 +104,8 @@ extension ColorCollectionView: UICollectionViewDataSource {
         if isSelected {
             collectionView.selectItem(at: indexPath, animated: false, scrollPosition: [])
         }
-        (cell as? ColorCell)?.applySelectedAppearance(isSelected)
+        let color = colors[indexPath.item]
+        (cell as? ColorCell)?.configure(color: color, selected: isSelected)
     }
 }
 
