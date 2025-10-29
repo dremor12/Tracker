@@ -13,11 +13,6 @@ final class TrackerStore: NSObject {
         self.context = context
         super.init()
     }
-    
-    convenience override init() {
-        let app = UIApplication.shared.delegate as! AppDelegate
-        self.init(context: app.persistentContainer.viewContext)
-    }
 
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCoreData> = {
         let request: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()

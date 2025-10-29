@@ -9,10 +9,9 @@ final class TrackerRecordStore: NSObject {
     weak var delegate: TrackerRecordStoreDelegate?
     private let context: NSManagedObjectContext
 
-    init(context: NSManagedObjectContext) { self.context = context; super.init() }
-    convenience override init() {
-        let app = UIApplication.shared.delegate as! AppDelegate
-        self.init(context: app.persistentContainer.viewContext)
+    init(context: NSManagedObjectContext) {
+        self.context = context;
+        super.init()
     }
 
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerRecordCoreData> = {

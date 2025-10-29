@@ -11,18 +11,9 @@ final class TrackerCategoryStore: NSObject {
     weak var delegate: TrackerCategoryStoreDelegate?
     private let context: NSManagedObjectContext
     
-    init(
-        context: NSManagedObjectContext
-    ) {
+    init(context: NSManagedObjectContext) {
         self.context = context
         super.init()
-    }
-    
-    convenience override init() {
-        let app = UIApplication.shared.delegate as! AppDelegate
-        self.init(
-            context: app.persistentContainer.viewContext
-        )
     }
     
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCategoryCoreData> = {
@@ -79,6 +70,32 @@ final class TrackerCategoryStore: NSObject {
             }
 
             return TrackerCategory(title: categoryTitle, trackers: trackers)
+        }
+    }
+    
+    func createCategory(title: String) throws {
+        let category = TrackerCategoryCoreData(context: context)
+        category.title = title
+        try context.save()
+    }
+    
+    func renameCategory(oldTitle: String, newTitle: String) throws {
+        let request: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "title == %@", oldTitle)
+        request.fetchLimit = 1
+        if let category = try context.fetch(request).first {
+            category.title = newTitle
+            try context.save()
+        }
+    }
+    
+    func deleteCategory(title: String) throws {
+        let request: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
+        request.predicate = NSPredicate(format: "title == %@", title)
+        request.fetchLimit = 1
+        if let category = try context.fetch(request).first {
+            context.delete(category)
+            try context.save()
         }
     }
 

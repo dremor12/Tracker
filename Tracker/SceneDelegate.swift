@@ -14,7 +14,27 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         IQKeyboardToolbarManager.shared.isEnabled = true
         
         let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = TabBarViewController()
+        
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.viewContext
+
+
+        let trackerStore = TrackerStore(context: context)
+        let recordStore = TrackerRecordStore(context: context)
+        let categoryStore = TrackerCategoryStore(context: context)
+        
+        let root: UIViewController
+        if OnboardingViewController.hasSeenOnboarding() {
+            root = TabBarViewController(
+                trackerStore: trackerStore,
+                categoryStore: categoryStore,
+                recordStore: recordStore
+            )
+        } else {
+            root = OnboardingViewController()
+        }
+
+        window.rootViewController = root
         window.makeKeyAndVisible()
         self.window = window
     }
