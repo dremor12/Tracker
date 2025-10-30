@@ -3,7 +3,7 @@ import UIKit
 final class OnboardingViewController: UIPageViewController {
     private static let onboardingKey = "hasSeenOnboarding"
     
-    lazy var pages: [UIViewController] = {
+    private lazy var pages: [UIViewController] = {
         return [
             makePage(
                 image: UIImage(resource: .backgroundOne),
@@ -16,7 +16,7 @@ final class OnboardingViewController: UIPageViewController {
         ]
     }()
     
-    lazy var pageControl: UIPageControl = {
+    private lazy var pageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.numberOfPages = pages.count
         pageControl.currentPage = 0
@@ -26,7 +26,7 @@ final class OnboardingViewController: UIPageViewController {
         return pageControl
     }()
     
-    lazy var primaryButton: UIButton = {
+    private lazy var primaryButton: UIButton = {
         let button = UIButton(type: .system)
         
         var config = UIButton.Configuration.filled()
