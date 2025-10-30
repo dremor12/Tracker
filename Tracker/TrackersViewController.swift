@@ -2,16 +2,29 @@ import UIKit
 
 final class TrackersViewController: UIViewController, CreateTrackerDelegate {
 
-    private let trackerStore = TrackerStore()
-    private let trackerCategoryStore = TrackerCategoryStore()
-    private let trackerRecordStore = TrackerRecordStore()
+    private let trackerStore: TrackerStore
+    private let trackerCategoryStore: TrackerCategoryStore
+    private let trackerRecordStore: TrackerRecordStore
+    
+    init(trackerStore: TrackerStore,
+         categoryStore: TrackerCategoryStore,
+         recordStore: TrackerRecordStore) {
+        self.trackerStore = trackerStore
+        self.trackerCategoryStore = categoryStore
+        self.trackerRecordStore = recordStore
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.sectionInset = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
+        layout.sectionInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         layout.minimumLineSpacing = 12
-        layout.minimumInteritemSpacing = 8
-        layout.itemSize = CGSize(width: 160, height: 90)
+        layout.minimumInteritemSpacing = 9
+        layout.itemSize = CGSize(width: 167, height: 90)
 
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -37,7 +50,7 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
     private var selectedDate: Date = Date()
     private let datePicker = UIDatePicker()
     private let emptyStateImage = UIImageView(image: UIImage(resource: .mokoStar))
-    private let searchController = UISearchController(searchResultsController: nil)
+
 
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
@@ -47,14 +60,30 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
         label.textColor = .black
         return label
     }()
+    
+    private let headerLabel: UILabel = {
+        let l = UILabel()
+        l.text = "Трекеры"
+        l.font = .systemFont(ofSize: 34, weight: .bold)
+        l.translatesAutoresizingMaskIntoConstraints = false
+        return l
+    }()
+    
+    private let searchField: UISearchTextField = {
+        let f = UISearchTextField()
+        f.placeholder = "Поиск"
+        f.font = .systemFont(ofSize: 17, weight: .regular)
+        f.translatesAutoresizingMaskIntoConstraints = false
+        return f
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-
-        title = "Трекеры"
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.largeTitleDisplayMode = .always
+        
+        
+        navigationController?.navigationBar.prefersLargeTitles = false
+        navigationItem.largeTitleDisplayMode = .never
         definesPresentationContext = true
         
         trackerStore.delegate = self
@@ -66,7 +95,7 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
         trackerRecordStore.startObserving()
 
         configureNavigationBar()
-        configureSearchController()
+        configureStaticHeaderAndSearch()
         configureLayout()
     
         categories = (try? trackerCategoryStore.fetchAll()) ?? []
@@ -74,22 +103,25 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
         updateVisibleCategoriesAndUI()
     }
     
-    func didCreateTracker(_ tracker: Tracker) {
-        try? trackerStore.create(tracker, in: "Без категории")
+    func didCreateTracker(_ tracker: Tracker, categoryTitle: String) {
+        try? trackerStore.create(tracker, in: categoryTitle)
     }
     
-    private func configureSearchController() {
-        searchController.obscuresBackgroundDuringPresentation = false
-        searchController.hidesNavigationBarDuringPresentation = false
-        searchController.searchBar.placeholder = "Поиск"
-        searchController.searchBar.searchTextField.font = .systemFont(ofSize: 17, weight: .regular)
-        searchController.searchBar.layer.cornerRadius = 10
-        
-        searchController.delegate = self
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = false
+    private func configureStaticHeaderAndSearch() {
+        view.addSubviews([headerLabel, searchField])
+
+        NSLayoutConstraint.activate([
+            headerLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            headerLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            headerLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16),
+
+            searchField.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 7),
+            searchField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            searchField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            searchField.heightAnchor.constraint(equalToConstant: 36)
+        ])
     }
-    
+
     private func configureNavigationBar() {
         let addButton = UIButton(type: .system)
         var plusConfig = UIButton.Configuration.plain()
@@ -116,7 +148,7 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
         view.addSubviews([collectionView, emptyStateImage, emptyStateLabel])
         
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+            collectionView.topAnchor.constraint(equalTo: searchField.bottomAnchor, constant: 24),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -129,6 +161,8 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
         ])
     }
     
+   
+    
     private func scrollListToTopIfNeeded() {
         let top = -collectionView.adjustedContentInset.top
         if collectionView.contentOffset.y > top {
@@ -138,7 +172,7 @@ final class TrackersViewController: UIViewController, CreateTrackerDelegate {
     
     @objc
     private func addButtonTapped() {
-        let createVC = CreateTrackerViewController()
+        let createVC = CreateTrackerViewController(categoryStore: trackerCategoryStore)
         createVC.delegate = self
         let nav = UINavigationController(rootViewController: createVC)
         nav.modalPresentationStyle = .formSheet
@@ -291,11 +325,15 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
         layout collectionViewLayout: UICollectionViewLayout,
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
-        let inset: CGFloat = 16
-        let interItemSpacing: CGFloat = 8
-        let availableWidth = collectionView.bounds.width - inset * 2 - interItemSpacing
-        let cellWidth = availableWidth / 2
-        return CGSize(width: cellWidth, height: 148)
+        guard let flow = collectionViewLayout as? UICollectionViewFlowLayout else {
+            return CGSize(width: 167, height: 148)
+        }
+        let columns: CGFloat = 2
+        let totalSpacing = flow.minimumInteritemSpacing * (columns - 1)
+        let sectionInsets = flow.sectionInset.left + flow.sectionInset.right
+        let availableWidth = collectionView.bounds.width - totalSpacing - sectionInsets
+        let width = floor(availableWidth / columns)
+        return CGSize(width: width, height: 148)
     }
 
     

@@ -17,7 +17,7 @@ final class CategoryHeaderView: UICollectionReusableView {
         
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: topAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 28),
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])

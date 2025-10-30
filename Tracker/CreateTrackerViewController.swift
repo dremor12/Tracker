@@ -1,12 +1,22 @@
 import UIKit
 
 protocol CreateTrackerDelegate: AnyObject {
-    func didCreateTracker(_ tracker: Tracker)
+    func didCreateTracker(_ tracker: Tracker, categoryTitle: String)
 }
 
 final class CreateTrackerViewController: UIViewController {
     
     weak var delegate: CreateTrackerDelegate?
+    private let trackerCategoryStore: TrackerCategoryStore
+    
+    init(categoryStore: TrackerCategoryStore) {
+        self.trackerCategoryStore = categoryStore
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private let emojiItems: [String] = [
         "🙂", "😻", "🌺", "🐶", "❤️", "😱",
@@ -90,7 +100,8 @@ final class CreateTrackerViewController: UIViewController {
         colorCollectionView.translatesAutoresizingMaskIntoConstraints = false
         return colorCollectionView
     }()
-
+    
+    private var selectedCategoryTitle: String?
     private let cancelButton = UIButton(type: .system)
     private let createButton = UIButton(type: .system)
     private let categoryButton = cellButton(title: "Категория")
@@ -123,6 +134,7 @@ final class CreateTrackerViewController: UIViewController {
         createButton.isEnabled = false
 
         scheduleButton.addTarget(self, action: #selector(scheduleTapped), for: .touchUpInside)
+        categoryButton.addTarget(self, action: #selector(categoryTapped), for: .touchUpInside)
         
         settingsLayout()
 
@@ -246,6 +258,23 @@ final class CreateTrackerViewController: UIViewController {
         return button
     }
     
+    private func updateCategorySubtitle(with text: String?) {
+        let title = "Категория\n\(text ?? "")"
+        let attr = NSMutableAttributedString(string: title)
+        
+        if let range = title.range(of: "Категория") {
+            attr.addAttribute(.font,
+                              value: UIFont.systemFont(ofSize: 17, weight: .regular),
+                              range: NSRange(range, in: title)
+            )
+        }
+        let subtitleRange = (title as NSString).range(of: text ?? "")
+        attr.addAttribute(.font, value: UIFont.systemFont(ofSize: 15), range: subtitleRange)
+        attr.addAttribute(.foregroundColor, value: UIColor.ypGray, range: subtitleRange)
+        
+        categoryButton.setAttributedTitle(attr, for: .normal)
+    }
+    
     private func updateScheduleSubtitle(with text: String?) {
         let title = "Расписание\n\(text ?? "")"
         let attribute = NSMutableAttributedString(string: title)
@@ -271,6 +300,22 @@ final class CreateTrackerViewController: UIViewController {
     @objc
     private func nameFieldChanged() {
         updateCreateButtonState()
+    }
+    
+    @objc
+    private func categoryTapped() {
+        let viewModel = CategoryViewModel(store: trackerCategoryStore)
+        let categoryViewController = CategoryViewController(viewModel: viewModel)
+
+        categoryViewController.onCategorySelected = { [weak self] (title: String) in
+            guard let self else { return }
+            self.selectedCategoryTitle = title
+            self.updateCategorySubtitle(with: title)
+            
+        }
+        let nav = UINavigationController(rootViewController: categoryViewController)
+        nav.modalPresentationStyle = .pageSheet
+        present(nav, animated: true)
     }
 
     @objc
@@ -316,8 +361,8 @@ final class CreateTrackerViewController: UIViewController {
             emoji: emoji,
             schedule: selectedDays
         )
-        
-        delegate?.didCreateTracker(tracker)
+        let categoryTitle = selectedCategoryTitle ?? "Без категории"
+        delegate?.didCreateTracker(tracker, categoryTitle: categoryTitle)
         dismiss(animated: true)
         updateScheduleSubtitle(with: nil)
     }
