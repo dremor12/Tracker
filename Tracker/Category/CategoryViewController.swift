@@ -32,9 +32,9 @@ final class CategoryViewController: UIViewController {
         let button = UIButton(type: .system)
         
         var config = UIButton.Configuration.filled()
-        config.title = "Добавить категорию"
-        config.baseBackgroundColor = .ypBlackDay
-        config.baseForegroundColor = .ypWhiteDay
+        config.title = NSLocalizedString("add_category", comment: "")
+        config.baseBackgroundColor = Colors.buttonColor
+        config.baseForegroundColor = Colors.buttonTextColor
         config.contentInsets = NSDirectionalEdgeInsets(top: 19, leading: 32, bottom: 19, trailing: 32)
         config.background.cornerRadius = 16
         
@@ -47,9 +47,9 @@ final class CategoryViewController: UIViewController {
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Привычки и события можно\nобъединить по смыслу"
+        label.text = NSLocalizedString("what_to_category", comment: "")
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .black
+        label.textColor = Colors.buttonColor
         label.textAlignment = .center
         label.numberOfLines = 2
         return label
@@ -58,16 +58,17 @@ final class CategoryViewController: UIViewController {
     private let containerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .ypBackgroundDay
+        view.backgroundColor = Colors.backgroundView
         view.layer.cornerRadius = 16
         return view
     }()
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = Colors.viewBackgroundColor
         
-        title = "Категория"
+        title = NSLocalizedString("category", comment: "")
         
         configureLayout()
         createButton.addTarget(self, action: #selector(createButtonTapped), for: .touchUpInside)
@@ -98,7 +99,10 @@ final class CategoryViewController: UIViewController {
         let cellRectInTable = tableView.convert(cellRect, to: view)
         let cellRectInWindow = view.convert(cellRectInTable, to: nil)
 
-        let menu = CategoryContextMenuController(categoryTitle: title, anchorFrameInWindow: cellRectInWindow)
+        let menu = ContextMenuController(
+            title: title,
+            mode: .category,
+            anchorFrameInWindow: cellRectInWindow)
 
         menu.onEdit = { [weak self] in
             guard let self else { return }
@@ -192,13 +196,13 @@ final class CategoryViewController: UIViewController {
     
     private func presentDeleteConfirmation(for title: String, sourceRect: CGRect, in sourceView: UIView) {
         let alert = UIAlertController(title: nil,
-                                      message: "Эта категория точно не нужна?",
+                                      message: NSLocalizedString("delete_category_confirm", comment: ""),
                                       preferredStyle: .actionSheet)
 
-        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+        let deleteAction = UIAlertAction(title: NSLocalizedString("delete_button", comment: ""), style: .destructive) { [weak self] _ in
             self?.viewModel.deleteCategory(title: title)
         }
-        let cancelAction = UIAlertAction(title: "Отменить", style: .cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: NSLocalizedString("cancel_button", comment: ""), style: .cancel, handler: nil)
 
         alert.addAction(deleteAction)
         alert.addAction(cancelAction)

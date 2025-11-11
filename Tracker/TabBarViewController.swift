@@ -35,15 +35,15 @@ final class TabBarViewController: UITabBarController {
         
         let trackersNavigation = UINavigationController(rootViewController: trackersViewController)
         trackersNavigation.tabBarItem = UITabBarItem(
-            title: "Трекеры",
+            title: NSLocalizedString("trackers", comment: ""),
             image: UIImage(systemName: "record.circle.fill"),
             selectedImage: nil
         )
         
-        let statsViewController = StatisticsViewController()
+        let statsViewController = StatisticsViewController(recordStore: recordStore)
         let statsNavigation = UINavigationController(rootViewController: statsViewController)
         statsNavigation.tabBarItem = UITabBarItem(
-            title: "Статистика",
+            title: NSLocalizedString("statistics", comment: ""),
             image: UIImage(systemName: "hare.fill"),
             selectedImage: nil
         )

@@ -5,7 +5,7 @@ final class TrackerCell: UICollectionViewCell {
     
     var onToggle: (() -> Void)?
     
-    private let cardView: UIView = {
+    let cardView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.layer.cornerRadius = 16
@@ -28,11 +28,11 @@ final class TrackerCell: UICollectionViewCell {
         return label
     }()
     
-    private let nameLabel: UILabel = {
+    let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .white
+        label.textColor = .ypWhiteDay
         label.numberOfLines = 2
         label.textAlignment = .left
         return label
@@ -42,14 +42,13 @@ final class TrackerCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 12)
-        label.textColor = .black
+        label.textColor = Colors.buttonColor
         return label
     }()
     
     private let toggleButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.tintColor = .white
         button.layer.cornerRadius = 17
         button.layer.masksToBounds = true
         return button
@@ -81,7 +80,7 @@ final class TrackerCell: UICollectionViewCell {
         emojiBackgroundView.backgroundColor = .white.withAlphaComponent(0.3)
         emojiLabel.text = tracker.emoji
         nameLabel.text = tracker.title
-        counterLabel.text = "\(count) \(pluralizedDay(count))"
+        counterLabel.text = "\(localizedDays(count))"
         
         let iconName = isCompleted ? "checkmark" : "plus"
         let image = UIImage(
@@ -90,7 +89,7 @@ final class TrackerCell: UICollectionViewCell {
         )
         
         toggleButton.setImage(image, for: .normal)
-        toggleButton.tintColor = .white
+        toggleButton.tintColor = Colors.buttonTextColor
         toggleButton.backgroundColor = isCompleted ? background.withAlphaComponent(0.3) : background
 
     }
@@ -137,14 +136,8 @@ final class TrackerCell: UICollectionViewCell {
         onToggle?()
     }
     
-    private func pluralizedDay(_ count: Int) -> String {
-        let rem10 = count % 10
-        let rem100 = count % 100
-        if rem100 >= 11 && rem100 <= 14 { return "дней" }
-        switch rem10 {
-            case 1: return "день"
-            case 2...4: return "дня"
-            default: return "дней"
-        }
+    func localizedDays(_ count: Int) -> String {
+        let format = NSLocalizedString("days_count", comment: "Plural form for days")
+        return String.localizedStringWithFormat(format, count)
     }
 }

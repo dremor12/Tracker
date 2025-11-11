@@ -36,7 +36,7 @@ final class ColorCell: UICollectionViewCell {
         colorView.layer.cornerCurve = .continuous
         colorView.layer.masksToBounds = true
 
-        layer.insertSublayer(glowLayer, below: colorView.layer)
+        contentView.layer.insertSublayer(glowLayer, below: colorView.layer)
         glowLayer.fillColor = UIColor.clear.cgColor
         glowLayer.strokeColor = UIColor.clear.cgColor
         glowLayer.lineWidth = glowWidth

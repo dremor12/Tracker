@@ -7,7 +7,7 @@ final class CategoryHeaderView: UICollectionReusableView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: 19, weight: .bold)
-        label.textColor = .ypBlackDay
+        label.textColor = Colors.buttonColor
         return label
     }()
     

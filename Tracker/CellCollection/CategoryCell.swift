@@ -3,10 +3,10 @@ import UIKit
 final class CategoryCell: UITableViewCell {
     static let reuseIdentifier = "CategoryCell"
 
-    private let titleLabel: UILabel = {
+    private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .regular)
-        label.textColor = .ypBlackDay
+        label.textColor = Colors.buttonColor
         label.translatesAutoresizingMaskIntoConstraints = false
         label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         label.setContentHuggingPriority(.defaultLow, for: .horizontal)

@@ -55,6 +55,11 @@ final class EmojiCollectionView: UICollectionView {
             updateHeightIfNeeded()
         }
     }
+    
+    func select(emoji: String?) {
+        selectedEmoji = emoji
+        reloadData()
+    }
 
     private func calculatedHeight(for width: CGFloat) -> CGFloat {
         let totalHorizontalInset = sectionInsets.left + sectionInsets.right
@@ -154,5 +159,17 @@ extension EmojiCollectionView: UICollectionViewDelegateFlowLayout {
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         lineSpacing
+    }
+}
+
+extension EmojiCollectionView {
+    func preselect(emoji: String?) {
+        selectedEmoji = emoji
+        if let emoji, let idx = emojis.firstIndex(of: emoji) {
+            let ip = IndexPath(item: idx, section: 0)
+            selectItem(at: ip, animated: false, scrollPosition: [])
+        }
+        reloadData()
+        layoutIfNeeded()
     }
 }

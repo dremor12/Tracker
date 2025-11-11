@@ -75,6 +75,11 @@ final class TrackerRecordStore: NSObject {
             return TrackerRecord(trackerId: trackerId, date: date)
         }
     }
+    
+    func totalCompletedCount() throws -> Int {
+        let request: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+        return try context.count(for: request)
+    }
 
     private func startOfDay(_ date: Date) -> Date {
         Calendar.current.startOfDay(for: date)

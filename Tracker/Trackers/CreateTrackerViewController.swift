@@ -35,8 +35,8 @@ final class CreateTrackerViewController: UIViewController {
 
     private let nameField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название трекера"
-        textField.backgroundColor = .ypBackgroundDay
+        textField.placeholder = NSLocalizedString("enter_name_tracker", comment: "")
+        textField.backgroundColor = Colors.backgroundView
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17, weight: .regular)
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -61,21 +61,21 @@ final class CreateTrackerViewController: UIViewController {
     private let optionsContainer: UIView = {
         let container = UIView()
         container.layer.cornerRadius = 16
-        container.backgroundColor = .ypBackgroundDay
+        container.backgroundColor = Colors.backgroundView
         container.translatesAutoresizingMaskIntoConstraints = false
         return container
     }()
     
     private let bottomBar: UIView = {
         let bottomBar = UIView()
-        bottomBar.backgroundColor = .ypWhiteDay
+        bottomBar.backgroundColor = Colors.buttonTextColor
         bottomBar.translatesAutoresizingMaskIntoConstraints = false
         return bottomBar
     }()
 
     private let emojiLabel: UILabel = {
         let emojiLabel = UILabel()
-        emojiLabel.text = "Emoji"
+        emojiLabel.text = NSLocalizedString("emoji", comment: "")
         emojiLabel.font = UIFont.systemFont(ofSize: 19, weight: .bold)
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
         return emojiLabel
@@ -89,7 +89,7 @@ final class CreateTrackerViewController: UIViewController {
     
     private let colorLabel: UILabel = {
         let colorLabel = UILabel()
-        colorLabel.text = "Цвет"
+        colorLabel.text = NSLocalizedString("color", comment: "")
         colorLabel.font = .systemFont(ofSize: 19, weight: .bold)
         colorLabel.translatesAutoresizingMaskIntoConstraints = false
         return colorLabel
@@ -104,20 +104,21 @@ final class CreateTrackerViewController: UIViewController {
     private var selectedCategoryTitle: String?
     private let cancelButton = UIButton(type: .system)
     private let createButton = UIButton(type: .system)
-    private let categoryButton = cellButton(title: "Категория")
-    private let scheduleButton = cellButton(title: "Расписание")
+    private let categoryButton = cellButton(title: NSLocalizedString("category", comment: ""))
+    private let scheduleButton = cellButton(title: NSLocalizedString("shedule", comment: ""))
     private var selectedDays: [WeekDay] = []
     private let scrollView = UIScrollView()
     private let contentView = UIView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .ypWhiteDay
-        navigationItem.title = "Новая привычка"
+        view.backgroundColor = Colors.viewBackgroundColor
+        
+        navigationItem.title = NSLocalizedString("new_habit", comment: "")
         
         nameField.addTarget(self, action: #selector(nameFieldChanged), for: .editingChanged)
 
-        cancelButton.setTitle("Отменить", for: .normal)
+        cancelButton.setTitle(NSLocalizedString("cancel_button", comment: ""), for: .normal)
         cancelButton.setTitleColor(.systemRed, for: .normal)
         cancelButton.layer.borderColor = UIColor.systemRed.cgColor
         cancelButton.layer.borderWidth = 1
@@ -125,8 +126,9 @@ final class CreateTrackerViewController: UIViewController {
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
 
-        createButton.setTitle("Создать", for: .normal)
-        createButton.setTitleColor(.white, for: .normal)
+        createButton.setTitle(NSLocalizedString("create", comment: ""), for: .normal)
+        createButton.setTitleColor(Colors.buttonTextColor, for: .normal)
+        createButton.setTitleColor(.ypWhiteDay, for: .disabled)
         createButton.backgroundColor = .ypGray
         createButton.layer.cornerRadius = 12
         createButton.translatesAutoresizingMaskIntoConstraints = false
@@ -241,7 +243,7 @@ final class CreateTrackerViewController: UIViewController {
         button.setTitle(title, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 17, weight: .regular)
         button.contentHorizontalAlignment = .left
-        config.baseForegroundColor = .ypBlackDay
+        config.baseForegroundColor = Colors.buttonColor
         config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
         button.configuration = config
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -259,10 +261,10 @@ final class CreateTrackerViewController: UIViewController {
     }
     
     private func updateCategorySubtitle(with text: String?) {
-        let title = "Категория\n\(text ?? "")"
+        let title = "\(NSLocalizedString("category", comment: ""))\n\(text ?? "")"
         let attr = NSMutableAttributedString(string: title)
         
-        if let range = title.range(of: "Категория") {
+        if let range = title.range(of: NSLocalizedString("category", comment: "")) {
             attr.addAttribute(.font,
                               value: UIFont.systemFont(ofSize: 17, weight: .regular),
                               range: NSRange(range, in: title)
@@ -276,17 +278,27 @@ final class CreateTrackerViewController: UIViewController {
     }
     
     private func updateScheduleSubtitle(with text: String?) {
-        let title = "Расписание\n\(text ?? "")"
-        let attribute = NSMutableAttributedString(string: title)
-        if let range = title.range(of: "Расписание") {
-            let ns = NSRange(range, in: title)
-            attribute.addAttribute(.font, value: UIFont.systemFont(ofSize: 17, weight: .regular), range: ns)
+        let title = NSLocalizedString("shedule", comment: "")
+        guard let text, !text.isEmpty else {
+            scheduleButton.setAttributedTitle(nil, for: .normal)
+            scheduleButton.setTitle(title, for: .normal)
+            scheduleButton.titleLabel?.numberOfLines = 1
+            return
         }
-        let subtitleRange = (title as NSString).range(of: text ?? "")
-        attribute.addAttribute(.font, value: UIFont.systemFont(ofSize: 15), range: subtitleRange)
-        attribute.addAttribute(.foregroundColor, value: UIColor.ypGray, range: subtitleRange)
-        scheduleButton.setAttributedTitle(attribute, for: .normal)
+        let full = "\(title)\n\(text)"
+        let attr = NSMutableAttributedString(string: full)
+        if let range = full.range(of: title) {
+            let ns = NSRange(range, in: full)
+            attr.addAttribute(.font, value: UIFont.systemFont(ofSize: 17, weight: .regular), range: ns)
+            attr.addAttribute(.foregroundColor, value: Colors.buttonColor, range: ns)
+        }
+        let subtitleRange = (full as NSString).range(of: text)
+        attr.addAttribute(.font, value: UIFont.systemFont(ofSize: 15), range: subtitleRange)
+        attr.addAttribute(.foregroundColor, value: UIColor.ypGray, range: subtitleRange)
+        scheduleButton.setAttributedTitle(attr, for: .normal)
+        scheduleButton.titleLabel?.numberOfLines = 2
     }
+
 
     func updateCreateButtonState() {
         let nameIsEmpty = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
@@ -294,7 +306,7 @@ final class CreateTrackerViewController: UIViewController {
         let hasEmoji = (emojiCollectionView.selectedEmoji != nil)
         let hasColor = (colorCollectionView.selectedColor != nil)
         createButton.isEnabled = !nameIsEmpty && hasSchedule && hasEmoji && hasColor
-        createButton.backgroundColor = createButton.isEnabled ? .ypBlackDay : .ypGray
+        createButton.backgroundColor = createButton.isEnabled ? Colors.buttonColor : .ypGray
     }
     
     @objc
@@ -320,23 +332,28 @@ final class CreateTrackerViewController: UIViewController {
 
     @objc
     private func scheduleTapped() {
-        let scheduleVC = ScheduleViewController()
+        let scheduleVC = ScheduleViewController(initialSelectedDays: selectedDays)
+        
         scheduleVC.onDaysChanged = { [weak self] days in
             guard let self else { return }
             self.selectedDays = days
             self.updateCreateButtonState()
-            let subtitle: String
-            if Set(days) == Set(WeekDay.allCases) {
-                subtitle = "Каждый день"
+            
+            if days.isEmpty {
+                self.updateScheduleSubtitle(with: nil)
+            } else if Set(days) == Set(WeekDay.allCases) {
+                self.updateScheduleSubtitle(with: NSLocalizedString("every_day", comment: ""))
             } else {
-                subtitle = days
+                let text = days
                     .sorted { $0.order < $1.order }
-                    .map { $0.shortName }
+                    .map { $0.localizedShort }
                     .joined(separator: ", ")
+                self.updateScheduleSubtitle(with: text)
             }
-            self.updateScheduleSubtitle(with: subtitle)
         }
-        present(scheduleVC, animated: true)
+        let nav = UINavigationController(rootViewController: scheduleVC)
+        nav.modalPresentationStyle = .pageSheet
+        present(nav, animated: true)
     }
 
     @objc
@@ -361,7 +378,7 @@ final class CreateTrackerViewController: UIViewController {
             emoji: emoji,
             schedule: selectedDays
         )
-        let categoryTitle = selectedCategoryTitle ?? "Без категории"
+        let categoryTitle = selectedCategoryTitle ?? NSLocalizedString("uncategorized", comment: "")
         delegate?.didCreateTracker(tracker, categoryTitle: categoryTitle)
         dismiss(animated: true)
         updateScheduleSubtitle(with: nil)
