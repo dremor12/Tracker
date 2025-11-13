@@ -1,52 +1,30 @@
 import UIKit
 
-enum WeekDay: String, CaseIterable, Hashable {
-    case monday = "Понедельник"
-    case tuesday = "Вторник"
-    case wednesday = "Среда"
-    case thursday = "Четверг"
-    case friday = "Пятница"
-    case saturday = "Суббота"
-    case sunday = "Воскресенье"
+enum WeekDay: Int, CaseIterable, Hashable {
+    case sunday = 1, monday = 2, tuesday = 3, wednesday = 4, thursday = 5, friday = 6, saturday = 7
 
-    var shortName: String {
-        switch self {
-        case .monday: "Пн"
-        case .tuesday: "Вт"
-        case .wednesday: "Ср"
-        case .thursday: "Чт"
-        case .friday: "Пт"
-        case .saturday: "Сб"
-        case .sunday: "Вс"
-        }
+    var order: Int { self == .sunday ? 7 : rawValue - 1 }
+
+    static func from(calendarWeekday value: Int) -> WeekDay? { WeekDay(rawValue: value) }
+
+    var localizedLong: String {
+        let symbols = WeekDay.formatter.weekdaySymbols ?? []
+        let index = rawValue - 1
+        return (0..<symbols.count).contains(index) ? symbols[index] : ""
     }
 
-    var order: Int {
-        switch self {
-        case .monday:  1
-        case .tuesday:  2
-        case .wednesday:  3
-        case .thursday:  4
-        case .friday:  5
-        case .saturday:  6
-        case .sunday:  7
-        }
+    var localizedShort: String {
+        let symbols = WeekDay.formatter.shortWeekdaySymbols ?? []
+        let index = rawValue - 1
+        return (0..<symbols.count).contains(index) ? symbols[index] : ""
     }
 
-    static func from(calendarWeekday int: Int) -> WeekDay? {
-        switch int {
-        case 2: .monday
-        case 3: .tuesday
-        case 4: .wednesday
-        case 5: .thursday
-        case 6: .friday
-        case 7: .saturday
-        case 1: .sunday
-        default: nil
-        }
-    }
+    private static let formatter: DateFormatter = {
+        let df = DateFormatter()
+        df.locale = .current
+        return df
+    }()
 }
-
 
 struct Tracker {
     let id: UUID
@@ -55,4 +33,3 @@ struct Tracker {
     let emoji: String
     let schedule: [WeekDay]
 }
-

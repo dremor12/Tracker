@@ -15,7 +15,7 @@ final class ScheduleCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont.systemFont(ofSize: 17)
-        label.textColor = .ypBlackDay
+        label.textColor = Colors.buttonColor
         return label
     }()
     
@@ -42,7 +42,7 @@ final class ScheduleCell: UITableViewCell {
     }
     
     func configure(with day: WeekDay, isOn: Bool, isLast: Bool) {
-        dayLabel.text = day.rawValue
+        dayLabel.text = day.localizedLong
         toggleSwitch.isOn = isOn
         separatorView.isHidden = isLast
     }

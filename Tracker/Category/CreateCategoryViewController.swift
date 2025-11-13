@@ -24,8 +24,8 @@ final class CreateCategoryViewController: UIViewController {
     
     private let nameField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Введите название категории"
-        textField.backgroundColor = .ypBackgroundDay
+        textField.placeholder = NSLocalizedString("enter_name_category", comment: "")
+        textField.backgroundColor =  Colors.backgroundView
         textField.layer.cornerRadius = 16
         textField.font = .systemFont(ofSize: 17, weight: .regular)
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -45,8 +45,8 @@ final class CreateCategoryViewController: UIViewController {
         var config = UIButton.Configuration.plain()
         config.contentInsets = NSDirectionalEdgeInsets(top: 19, leading: 32, bottom: 19, trailing: 32)
         
-        button.setTitle("Готово", for: .normal)
-        button.setTitleColor(.ypWhiteDay, for: .normal)
+        button.setTitle(NSLocalizedString("ready", comment: ""), for: .normal)
+        button.setTitleColor(Colors.buttonTextColor, for: .normal)
         button.setTitleColor(.ypWhiteDay, for: .disabled)
         button.titleLabel?.font = .boldSystemFont(ofSize: 16)
         button.configuration = config
@@ -56,19 +56,19 @@ final class CreateCategoryViewController: UIViewController {
         button.isEnabled = false
         return button
     }()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .ypWhiteDay
+        view.backgroundColor = Colors.viewBackgroundColor
         
         switch mode {
         case .create:
-            navigationItem.title = "Новая категория"
+            navigationItem.title = NSLocalizedString("new_category", comment: "")
         case .edit(let originalTitle):
-            navigationItem.title = "Редактирование категории"
+            navigationItem.title = NSLocalizedString("edit_category", comment: "")
             nameField.text = originalTitle
             createButton.isEnabled = true
-            createButton.backgroundColor = .ypBlackDay
+            createButton.backgroundColor = Colors.buttonColor
         }
         
         nameField.addTarget(self, action: #selector(nameFieldChanged), for: .editingChanged)
@@ -96,7 +96,7 @@ final class CreateCategoryViewController: UIViewController {
     private func nameFieldChanged() {
         let nameIsEmpty = nameField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
         createButton.isEnabled = !nameIsEmpty
-        createButton.backgroundColor = createButton.isEnabled ? .ypBlackDay : .ypGray
+        createButton.backgroundColor = createButton.isEnabled ? Colors.buttonColor : .ypGray
     }
     
     @objc

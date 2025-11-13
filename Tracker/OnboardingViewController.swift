@@ -7,11 +7,11 @@ final class OnboardingViewController: UIPageViewController {
         return [
             makePage(
                 image: UIImage(resource: .backgroundOne),
-                titleText: "Отслеживайте только то, что хотите"
+                titleText: NSLocalizedString("track_only", comment: "")
             ),
             makePage(
                 image: UIImage(resource: .backgroundTwo),
-                titleText: "Даже если это \nне литры воды и йога"
+                titleText: NSLocalizedString("event_not_water_and_yoga", comment: "")
             )
         ]
     }()
@@ -30,7 +30,7 @@ final class OnboardingViewController: UIPageViewController {
         let button = UIButton(type: .system)
         
         var config = UIButton.Configuration.filled()
-        config.title = "Вот это технологии!"
+        config.title = NSLocalizedString("technology_button", comment: "")
         config.baseBackgroundColor = .black
         config.baseForegroundColor = .white
         config.contentInsets = NSDirectionalEdgeInsets(top: 19, leading: 32, bottom: 19, trailing: 32)

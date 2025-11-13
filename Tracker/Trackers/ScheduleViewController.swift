@@ -2,32 +2,41 @@ import UIKit
 
 final class ScheduleViewController: UIViewController {
     
-    private let days: [WeekDay] = WeekDay.allCases
+    private let days: [WeekDay] = WeekDay.allCases.sorted { $0.order < $1.order }
     
-    private var selectedDays: [WeekDay] = []
+    private var selectedDays: Set<WeekDay>
+    
     var onDaysChanged: (([WeekDay]) -> Void)?
-
+    
+    init(initialSelectedDays: [WeekDay] = []) {
+        self.selectedDays = Set(initialSelectedDays)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    
     private let tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        tableView.separatorStyle = .none
         return tableView
     }()
     
     private let containerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .ypBackgroundDay
+        view.backgroundColor = Colors.backgroundView
         view.layer.cornerRadius = 16
         return view
     }()
     
     private let doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Готово", for: .normal)
-        button.backgroundColor = .ypBlackDay
-        button.setTitleColor(.white, for: .normal)
+        button.setTitle(NSLocalizedString("ready", comment: ""), for: .normal)
+        button.backgroundColor = Colors.buttonColor
+        button.setTitleColor(Colors.buttonTextColor, for: .normal)
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
@@ -36,7 +45,7 @@ final class ScheduleViewController: UIViewController {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Расписание"
+        label.text = NSLocalizedString("shedule", comment: "")
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
@@ -45,8 +54,10 @@ final class ScheduleViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .ypWhiteDay
-
+        view.backgroundColor = Colors.viewBackgroundColor
+        
+        title = NSLocalizedString("shedule", comment: "")
+        
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(ScheduleCell.self, forCellReuseIdentifier: ScheduleCell.reuseIdentifier)
@@ -55,21 +66,18 @@ final class ScheduleViewController: UIViewController {
         
         doneButton.addTarget(self, action: #selector(doneTapped), for: .touchUpInside)
         tableView.isScrollEnabled = false
+        tableView.tableFooterView = UIView()
     }
     
     private func configurationLayout() {
-        view.addSubviews([titleLabel, containerView, doneButton])
+        view.addSubviews([containerView, doneButton])
         containerView.addSubview(tableView)
         
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 27),
-            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            containerView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 24),
+            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            containerView.heightAnchor.constraint(equalToConstant: CGFloat(days.count) * 75),
-            containerView.bottomAnchor.constraint(equalTo: doneButton.topAnchor, constant: -70),
+            containerView.bottomAnchor.constraint(equalTo: doneButton.topAnchor, constant: -47),
             
             tableView.topAnchor.constraint(equalTo: containerView.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
@@ -87,17 +95,16 @@ final class ScheduleViewController: UIViewController {
     private func switchChanged(_ sender: UISwitch) {
         let day = days[sender.tag]
         if sender.isOn {
-            if !selectedDays.contains(day) {
-                selectedDays.append(day)
-            }
+            selectedDays.insert(day)
         } else {
-            selectedDays.removeAll { $0 == day }
+            selectedDays.remove(day)
         }
     }
 
     @objc
     private func doneTapped() {
-        onDaysChanged?(selectedDays)
+        let sorted = selectedDays.sorted { $0.order < $1.order }
+        onDaysChanged?(sorted)
         dismiss(animated: true)
     }
 }
@@ -112,18 +119,14 @@ extension ScheduleViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: ScheduleCell.reuseIdentifier,
-            for: indexPath
-        ) as? ScheduleCell else {
-            return UITableViewCell()
-        }
-        
+        let cell = tableView.dequeueReusableCell(withIdentifier: ScheduleCell.reuseIdentifier, for: indexPath) as! ScheduleCell
         let day = days[indexPath.row]
         let isLast = indexPath.row == days.count - 1
-        
+
         cell.configure(with: day, isOn: selectedDays.contains(day), isLast: isLast)
+
         cell.toggleSwitch.tag = indexPath.row
+        cell.toggleSwitch.removeTarget(nil, action: nil, for: .allEvents)
         cell.toggleSwitch.addTarget(self, action: #selector(switchChanged(_:)), for: .valueChanged)
         return cell
     }

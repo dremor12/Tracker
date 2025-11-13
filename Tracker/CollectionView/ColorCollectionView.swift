@@ -55,6 +55,16 @@ final class ColorCollectionView: UICollectionView {
             updateHeightIfNeeded()
         }
     }
+    
+    func select(color: UIColor?) {
+        selectedColor = color
+        if let color, let idx = colors.firstIndex(where: { $0.equalsTo(color) }) {
+            selectedIndex = idx
+        } else {
+            selectedIndex = nil
+        }
+        reloadData()
+    }
 
     private func calculatedHeight(for width: CGFloat) -> CGFloat {
         let totalHorizontalInset = sectionInsets.left + sectionInsets.right
@@ -158,3 +168,19 @@ extension ColorCollectionView: UICollectionViewDelegateFlowLayout {
         lineSpacing
     }
 }
+
+extension ColorCollectionView {
+    func preselect(color: UIColor?) {
+        selectedColor = color
+        if let color, let idx = colors.firstIndex(where: { $0.equalsTo(color) }) {
+            selectedIndex = idx
+            let ip = IndexPath(item: idx, section: 0)
+            selectItem(at: ip, animated: false, scrollPosition: [])
+        } else {
+            selectedIndex = nil
+        }
+        reloadData()
+        layoutIfNeeded()
+    }
+}
+
